@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Flag Quiz</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
+</head>
+<body>
+    <header>
+        <a href="html/learn.html" class="header-links">Learn</a>
+        <a href="html/quiz.html" class="header-links">Quiz</a>
+        <h1>Flag Quiz</h1>
+        <a href="#" class="header-links">Online</a>
+        <a href="html/profile.html" class="header-links">Profile</a>
+    </header>
+
+    <main>
+
+        <div class="country-info-section">
+            <h2>Country Information</h2>
+            <div id="regions-accordion" class="regions-accordion">
+                <!-- Regions will be populated by JavaScript as collapsible sections -->
+            </div>
+        </div>
+
+        <!-- Settings Overlay -->
+        <div class="settings-overlay" id="settings-overlay"></div>
+
+        <div class="settings">
+            <div class="setting"><p>Region</p>
+                <select class="setting-select" name="region" id="region">
+                    <option value="eu">Europe</option>
+                    <option value="na">North America</option>
+                    <option value="sa">South America</option>
+                    <option value="as">Asia</option>
+                    <option value="af">Africa</option>
+                    <option value="oc">Oceania</option>
+                    <option value="wrld">World</option>
+                </select>
+            </div>
+
+            <div class="setting quiz-type-setting">
+                <p>Quiz Type</p>
+                <select class="setting-select" name="quiz-type" id="quiz-type">
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="fill-in-the-blank">Fill in the Blank</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <p>Number of Questions</p>
+                <select class="setting-select" name="question-count" id="question-count">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">All</option>
+                </select>
+            </div>
+
+            <div class="setting checkbox-group"><p>Optional</p>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="Territory" value="territory" id="territory">
+                    <label for="territory">Territory</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="Capital" value="capital" id="capital">
+                    <label for="capital">Capital</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="Currency" value="currency" id="currency">
+                    <label for="currency">Currency</label>
+                </div>
+            </div>
+
+            <button class="start-quiz">Start</button>
+        </div>
+
+    </main>
+
+</body>
+<script src="js/countryData.js"></script>
+<script src="js/scripts.js"></script>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Flag Quiz - Profile</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
+</head>
+<body>
+    <header>
+        <a href="learn.html" class="header-links">Learn</a>
+        <a href="quiz.html" class="header-links">Quiz</a>
+        <a href="../index.html" class="header-title"><h1>Flag Quiz</h1></a>
+        <a href="#" class="header-links">Online</a>
+        <a href="#" class="header-links active">Profile</a>
+    </header>
+
+    <main>
+        <div class="profile-container">
+            <!-- Login/Signup Forms (shown when not logged in) -->
+            <div id="auth-section" class="auth-section">
+                <div class="auth-toggle">
+                    <button id="login-tab" class="auth-tab active">Login</button>
+                    <button id="signup-tab" class="auth-tab">Sign Up</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form active">
+                    <h2>Welcome Back!</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" name="password" required>
+                        </div>
+                        <button type="submit" class="auth-button">Login</button>
+                    </form>
+                    <p class="auth-message" id="login-message"></p>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signup-form" class="auth-form">
+                    <h2>Create Account</h2>
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="signup-username">Username</label>
+                            <input type="text" id="signup-username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email</label>
+                            <input type="email" id="signup-email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password</label>
+                            <input type="password" id="signup-password" name="password" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-confirm">Confirm Password</label>
+                            <input type="password" id="signup-confirm" name="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="auth-button">Sign Up</button>
+                    </form>
+                    <p class="auth-message" id="signup-message"></p>
+                </div>
+            </div>
+
+            <!-- Profile Dashboard (shown when logged in) -->
+            <div id="profile-dashboard" class="profile-dashboard hidden">
+                <div class="profile-header">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <span id="user-avatar">👤</span>
+                        </div>
+                        <div class="profile-details">
+                            <h2 id="user-name">Username</h2>
+                            <p id="user-email">user@example.com</p>
+                            <p class="member-since">Member since: <span id="member-date"></span></p>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="logout-button">Logout</button>
+                </div>
+
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <h3>Quiz Attempts</h3>
+                        <div class="stat-number" id="total-attempts">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Best Score</h3>
+                        <div class="stat-number" id="best-score">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <div class="stat-number" id="avg-score">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Countries Learned</h3>
+                        <div class="stat-number" id="countries-learned">0</div>
+                    </div>
+                </div>
+
+                <div class="profile-sections">
+                    <div class="profile-section">
+                        <h3>Recent Quiz Results</h3>
+                        <div id="recent-results" class="recent-results">
+                            <p class="no-data">No quiz results yet. Take your first quiz!</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Achievements</h3>
+                        <div id="achievements" class="achievements">
+                            <div class="achievement locked">
+                                <span class="achievement-icon">🏆</span>
+                                <div class="achievement-info">
+                                    <h4>Quiz Master</h4>
+                                    <p>Complete 10 quizzes</p>
+                                </div>
+                            </div>
+                            <div class="achievement locked">
+                                <span class="achievement-icon">🌟</span>
+                                <div class="achievement-info">
+                                    <h4>Perfect Score</h4>
+                                    <p>Get 100% on any quiz</p>
+                                </div>
+                            </div>
+                            <div class="achievement locked">
+                                <span class="achievement-icon">🌍</span>
+                                <div class="achievement-info">
+                                    <h4>Globe Trotter</h4>
+                                    <p>Learn about 50 countries</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+<script src="../js/profileIntegration.js"></script>
+<script src="../js/profileAPI.js"></script>
+</html>
