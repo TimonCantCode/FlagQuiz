@@ -6,11 +6,19 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Ensure database directory exists
+const dbDir = path.join(__dirname, 'database');
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+    console.log('Created database directory');
+}
 
 // Database setup
 const dbPath = path.join(__dirname, 'database', 'flagquiz.db');
@@ -30,7 +38,12 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../')));
+
+// Serve static files (exclude backend folder to prevent loops)
+app.use('/css', express.static(path.join(__dirname, '../css')));
+app.use('/js', express.static(path.join(__dirname, '../js')));
+app.use('/html', express.static(path.join(__dirname, '../html')));
+app.use('/images', express.static(path.join(__dirname, '../images')));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -376,6 +389,16 @@ app.get('/api/user/achievements', authenticateToken, (req, res) => {
 
 // Serve static files
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+// Catch-all handler for frontend routes
+app.get('*', (req, res) => {
+    // Don't interfere with API routes
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    // For all other routes, serve the main page
     res.sendFile(path.join(__dirname, '../index.html'));
 });
 
