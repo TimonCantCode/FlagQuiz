@@ -41,10 +41,28 @@
             </div>
 
             <div class="setting quiz-type-setting">
-                <p>Quiz Type</p>
-                <select class="setting-select" name="quiz-type" id="quiz-type">
+                <p>Learning Type</p>
+                <select class="setting-select" name="quiz-type" id="quiz-type-learn" style="display: none;">
+                    <option value="flashcard">Flashcard Mode</option>
+                    <option value="country-explorer">Country Explorer</option>
+                </select>
+                <select class="setting-select" name="quiz-type" id="quiz-type-quiz">
                     <option value="multiple-choice">Multiple Choice</option>
                     <option value="fill-in-the-blank">Fill in the Blank</option>
+                    <option value="flag-to-country">Flag → Country</option>
+                    <option value="country-to-flag">Country → Flag</option>
+                    <option value="partial-flag">Partial Flag Challenge</option>
+                    <option value="speed-round">Speed Round</option>
+                </select>
+            </div>
+
+            <div class="setting">
+                <p>Difficulty Level</p>
+                <select class="setting-select" name="difficulty" id="difficulty">
+                    <option value="beginner">Beginner (Easy flags)</option>
+                    <option value="intermediate" selected>Intermediate (Mixed)</option>
+                    <option value="advanced">Advanced (Similar flags)</option>
+                    <option value="expert">Expert (All flags)</option>
                 </select>
             </div>
 
@@ -59,7 +77,26 @@
                 </select>
             </div>
 
-            <div class="setting checkbox-group"><p>Optional</p>
+            <div class="setting checkbox-group study-features"><p>Study Features</p>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="spaced-repetition" value="spaced-repetition" id="spaced-repetition">
+                    <label for="spaced-repetition">Spaced Repetition</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="flag-details" value="flag-details" id="flag-details">
+                    <label for="flag-details">Flag History & Facts</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="pronunciation" value="pronunciation" id="pronunciation">
+                    <label for="pronunciation">Country Pronunciation</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" name="similar-flags" value="similar-flags" id="similar-flags">
+                    <label for="similar-flags">Similar Flag Comparison</label>
+                </div>
+            </div>
+
+            <div class="setting checkbox-group"><p>Additional Content</p>
                 <div class="checkbox-item">
                     <input type="checkbox" name="Territory" value="territory" id="territory">
                     <label for="territory">Territory</label>
@@ -81,5 +118,6 @@
 
 </body>
 <script src="js/countryData.js"></script>
+<script src="js/enhancedLearning.js"></script>
 <script src="js/scripts.js"></script>
 </html>

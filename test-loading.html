@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Loading Test</title>
+</head>
+<body>
+    <h1>Loading Test</h1>
+    <div id="test-output"></div>
+
+    <script src="js/countryData.js"></script>
+    <script src="js/enhancedLearning.js"></script>
+    <script>
+        const output = document.getElementById('test-output');
+        
+        // Test CountryData loading
+        if (typeof CountryData !== 'undefined') {
+            output.innerHTML += '<p>✅ CountryData loaded successfully</p>';
+            output.innerHTML += `<p>EU countries: ${CountryData.eu.length}</p>`;
+        } else {
+            output.innerHTML += '<p>❌ CountryData failed to load</p>';
+        }
+        
+        // Test EnhancedLearning loading
+        if (typeof EnhancedLearning !== 'undefined') {
+            output.innerHTML += '<p>✅ EnhancedLearning class loaded successfully</p>';
+            
+            try {
+                const learning = new EnhancedLearning();
+                output.innerHTML += '<p>✅ EnhancedLearning instance created successfully</p>';
+                
+                // Test getting countries by region
+                const countries = [];
+                Object.keys(CountryData).forEach(regionCode => {
+                    CountryData[regionCode].forEach(country => {
+                        countries.push({...country, region: regionCode});
+                    });
+                });
+                
+                const euCountries = countries.filter(c => c.region === 'eu');
+                output.innerHTML += `<p>EU countries with region: ${euCountries.length}</p>`;
+                
+                const filtered = learning.getFlagsByDifficulty(euCountries, 'intermediate');
+                output.innerHTML += `<p>Filtered EU countries (intermediate): ${filtered.length}</p>`;
+                
+            } catch (error) {
+                output.innerHTML += `<p>❌ Error creating EnhancedLearning: ${error.message}</p>`;
+            }
+        } else {
+            output.innerHTML += '<p>❌ EnhancedLearning class failed to load</p>';
+        }
+    </script>
+</body>
+</html>

@@ -2,12 +2,57 @@
 // This file contains all country information used by both learning and quiz modes
 // Based on ISO 3166-1-alpha-2 country codes supported by flag-icons library
 
+// Enhanced Country data with flag facts, difficulty ratings, and additional learning content
 const CountryData = {
     'eu': [
-        { code: 'ad', name: 'Andorra', capital: 'Andorra la Vella', currency: 'EUR' },
-        { code: 'al', name: 'Albania', capital: 'Tirana', currency: 'ALL' },
-        { code: 'am', name: 'Armenia', capital: 'Yerevan', currency: 'AMD' },
-        { code: 'at', name: 'Austria', capital: 'Vienna', currency: 'EUR' },
+        { 
+            code: 'ad', 
+            name: 'Andorra', 
+            capital: 'Andorra la Vella', 
+            currency: 'EUR',
+            difficulty: 'intermediate',
+            pronunciation: 'an-DOR-rah',
+            flagFacts: 'The flag features the coat of arms of Andorra in the center, representing the unique co-principality.',
+            similarFlags: ['md', 'ro'],
+            population: '77,265',
+            language: 'Catalan'
+        },
+        { 
+            code: 'al', 
+            name: 'Albania', 
+            capital: 'Tirana', 
+            currency: 'ALL',
+            difficulty: 'beginner',
+            pronunciation: 'al-BAY-nee-ah',
+            flagFacts: 'Features a black double-headed eagle, a symbol that dates back to the 15th century and represents the legacy of the Byzantine Empire.',
+            similarFlags: [],
+            population: '2.8 million',
+            language: 'Albanian'
+        },
+        { 
+            code: 'am', 
+            name: 'Armenia', 
+            capital: 'Yerevan', 
+            currency: 'AMD',
+            difficulty: 'beginner',
+            pronunciation: 'ar-MEE-nee-ah',
+            flagFacts: 'The red represents the blood shed for independence, blue for the sky, and orange for the fertile land.',
+            similarFlags: ['co'],
+            population: '3 million',
+            language: 'Armenian'
+        },
+        { 
+            code: 'at', 
+            name: 'Austria', 
+            capital: 'Vienna', 
+            currency: 'EUR',
+            difficulty: 'intermediate',
+            pronunciation: 'AWS-tree-ah',
+            flagFacts: 'One of the oldest flag designs in the world, dating back to 1191. Legend says it comes from a white tunic soaked in blood.',
+            similarFlags: ['lv'],
+            population: '8.9 million',
+            language: 'German'
+        },
         { code: 'az', name: 'Azerbaijan', capital: 'Baku', currency: 'AZN' },
         { code: 'ba', name: 'Bosnia and Herzegovina', capital: 'Sarajevo', currency: 'BAM' },
         { code: 'be', name: 'Belgium', capital: 'Brussels', currency: 'EUR' },
