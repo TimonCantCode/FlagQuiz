@@ -1,18 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get settings from sessionStorage
-    const settingsData = sessionStorage.getItem('learningSettings');
-    
-    if (!settingsData) {
-        // If no settings found, redirect back to main page
-        window.location.href = '../index.html';
-        return;
-    }
+    try {
+        const settingsData = sessionStorage.getItem('learningSettings');
+        
+        if (!settingsData) {
+            // If no settings found, redirect back to main page
+            window.location.href = '../index.html';
+            return;
+        }
 
-    const settings = JSON.parse(settingsData);
-    console.log('Enhanced learning mode settings:', settings);
-    
-    // Initialize enhanced learning content based on settings
-    initializeEnhancedLearning(settings);
+        const settings = JSON.parse(settingsData);
+        
+        // Initialize enhanced learning content based on settings
+        initializeEnhancedLearning(settings);
+    } catch (error) {
+        console.error('Failed to load learning settings:', error);
+        window.location.href = '../index.html';
+    }
 });
 
 function initializeEnhancedLearning(settings) {

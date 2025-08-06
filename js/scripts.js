@@ -113,15 +113,22 @@ document.addEventListener('DOMContentLoaded', function() {
             similarFlags
         };
         
-        console.log('Starting learning mode with enhanced settings:', settings);
-        
         // Handle different learning modes
         if (quizType === 'flashcard') {
-            startFlashcardMode(settings);
+            showLoadingState('Preparing flashcards...');
+            setTimeout(() => {
+                startFlashcardMode(settings);
+                hideLoadingState();
+            }, 100);
         } else {
             // Store settings in sessionStorage to pass to learn page
-            sessionStorage.setItem('learningSettings', JSON.stringify(settings));
-            window.location.href = 'html/learn.html';
+            try {
+                const validatedSettings = validateSettings(settings);
+                sessionStorage.setItem('learningSettings', JSON.stringify(validatedSettings));
+                window.location.href = 'html/learn.html';
+            } catch (error) {
+                showErrorMessage('Failed to save learning settings. Please try again.');
+            }
         }
     }
     
@@ -145,37 +152,229 @@ document.addEventListener('DOMContentLoaded', function() {
             includeCurrency
         };
         
-        console.log('Starting quiz mode with enhanced settings:', settings);
-        
         // Handle different quiz modes with distinct functionality
         switch(quizType) {
             case 'speed-round':
-                startSpeedRound(settings);
+                showLoadingState('Setting up speed round...');
+                setTimeout(() => {
+                    startSpeedRound(settings);
+                    hideLoadingState();
+                }, 100);
                 break;
             case 'partial-flag':
-                startPartialFlagChallenge(settings);
+                showLoadingState('Preparing partial flag challenge...');
+                setTimeout(() => {
+                    startPartialFlagChallenge(settings);
+                    hideLoadingState();
+                }, 100);
                 break;
             case 'flag-to-country':
-                startFlagToCountryQuiz(settings);
+                showLoadingState('Loading flag quiz...');
+                setTimeout(() => {
+                    startFlagToCountryQuiz(settings);
+                    hideLoadingState();
+                }, 100);
                 break;
             case 'country-to-flag':
-                startCountryToFlagQuiz(settings);
+                showLoadingState('Loading country quiz...');
+                setTimeout(() => {
+                    startCountryToFlagQuiz(settings);
+                    hideLoadingState();
+                }, 100);
                 break;
             case 'fill-in-the-blank':
-                startFillInBlankQuiz(settings);
+                showLoadingState('Preparing fill-in-the-blank quiz...');
+                setTimeout(() => {
+                    startFillInBlankQuiz(settings);
+                    hideLoadingState();
+                }, 100);
                 break;
             case 'multiple-choice':
                 // Store settings in sessionStorage to pass to quiz page
-                sessionStorage.setItem('quizSettings', JSON.stringify(settings));
-                window.location.href = 'html/quiz.html';
+                try {
+                    const validatedSettings = validateSettings(settings);
+                    sessionStorage.setItem('quizSettings', JSON.stringify(validatedSettings));
+                    window.location.href = 'html/quiz.html';
+                } catch (error) {
+                    showErrorMessage('Failed to save quiz settings. Please try again.');
+                }
                 break;
             default:
                 // Fallback to quiz page
-                sessionStorage.setItem('quizSettings', JSON.stringify(settings));
-                window.location.href = 'html/quiz.html';
+                try {
+                    const validatedSettings = validateSettings(settings);
+                    sessionStorage.setItem('quizSettings', JSON.stringify(validatedSettings));
+                    window.location.href = 'html/quiz.html';
+                } catch (error) {
+                    showErrorMessage('Failed to save settings. Please try again.');
+                }
+        }
+}
+
+// Progress Tracking
+class ProgressTracker {
+    constructor() {
+        this.storageKey = 'flagQuizProgress';
+        this.data = this.loadProgress();
+    }
+    
+    loadProgress() {
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            return stored ? JSON.parse(stored) : {
+                totalQuizzes: 0,
+                totalQuestions: 0,
+                totalCorrect: 0,
+                bestStreak: 0,
+                currentStreak: 0,
+                lastPlayDate: null,
+                quizHistory: [],
+                masteredCountries: []
+            };
+        } catch (error) {
+            return {
+                totalQuizzes: 0,
+                totalQuestions: 0,
+                totalCorrect: 0,
+                bestStreak: 0,
+                currentStreak: 0,
+                lastPlayDate: null,
+                quizHistory: [],
+                masteredCountries: []
+            };
         }
     }
     
+    saveProgress() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+        } catch (error) {
+            console.warn('Failed to save progress to localStorage');
+        }
+    }
+    
+    recordQuiz(stats, quizType) {
+        this.data.totalQuizzes++;
+        this.data.totalQuestions += stats.total;
+        this.data.totalCorrect += stats.score;
+        
+        const today = new Date().toDateString();
+        const lastPlay = this.data.lastPlayDate;
+        
+        if (lastPlay === today) {
+            // Same day
+        } else if (lastPlay === new Date(Date.now() - 86400000).toDateString()) {
+            // Yesterday - continue streak
+            this.data.currentStreak++;
+        } else {
+            // Break in streak
+            this.data.currentStreak = 1;
+        }
+        
+        this.data.bestStreak = Math.max(this.data.bestStreak, this.data.currentStreak);
+        this.data.lastPlayDate = today;
+        
+        this.data.quizHistory.push({
+            date: Date.now(),
+            type: quizType,
+            score: stats.score,
+            total: stats.total,
+            accuracy: stats.accuracy,
+            duration: stats.duration
+        });
+        
+        // Keep only last 50 quiz records
+        if (this.data.quizHistory.length > 50) {
+            this.data.quizHistory = this.data.quizHistory.slice(-50);
+        }
+        
+        this.saveProgress();
+    }
+    
+    getOverallStats() {
+        return {
+            totalQuizzes: this.data.totalQuizzes,
+            overallAccuracy: this.data.totalQuestions > 0 ? 
+                Math.round((this.data.totalCorrect / this.data.totalQuestions) * 100) : 0,
+            currentStreak: this.data.currentStreak,
+            bestStreak: this.data.bestStreak,
+            recentQuizzes: this.data.quizHistory.slice(-5)
+        };
+    }
+}
+
+// Initialize global progress tracker
+window.progressTracker = new ProgressTracker();
+
+// Loading state management
+function showLoadingState(message = 'Loading...') {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'loading-overlay';
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        color: white;
+        font-size: 18px;
+    `;
+    loadingDiv.innerHTML = `
+        <div style="text-align: center;">
+            <div style="margin-bottom: 15px;">${message}</div>
+            <div style="width: 40px; height: 40px; border: 3px solid #ffffff33; border-top: 3px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    
+    document.body.appendChild(loadingDiv);
+}
+
+function hideLoadingState() {
+    const loadingDiv = document.getElementById('loading-overlay');
+    if (loadingDiv) {
+        loadingDiv.remove();
+    }
+}
+
+// Error handling function
+function showErrorMessage(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message-popup';
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #f56565;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 500;
+        max-width: 300px;
+    `;
+    errorDiv.textContent = message;
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.parentNode.removeChild(errorDiv);
+        }
+    }, 5000);
+}
+
     // Hide settings when clicking outside
     document.addEventListener('click', function(e) {
         if (!settings.contains(e.target) && 
@@ -194,6 +393,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('regions-accordion');
         if (!container) return;
 
+        // Check if CountryData is available
+        if (typeof CountryData === 'undefined') {
+            container.innerHTML = `
+                <div class="error-message">
+                    <h3>Country Data Not Available</h3>
+                    <p>Please check your internet connection and refresh the page.</p>
+                </div>
+            `;
+            return;
+        }
+
         const regions = {
             'eu': 'Europe',
             'na': 'North America', 
@@ -204,9 +414,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         Object.keys(regions).forEach(regionCode => {
-            if (CountryData[regionCode]) {
-                const accordionItem = createAccordionItem(regionCode, regions[regionCode]);
-                container.appendChild(accordionItem);
+            try {
+                if (CountryData[regionCode] && CountryData[regionCode].length > 0) {
+                    const accordionItem = createAccordionItem(regionCode, regions[regionCode]);
+                    container.appendChild(accordionItem);
+                }
+            } catch (error) {
+                console.warn(`Failed to create accordion for region: ${regionCode}`);
             }
         });
     }
@@ -376,6 +590,90 @@ function startFlashcardMode(settings) {
     }
 }
 
+// Quiz Session Management
+class QuizSession {
+    constructor(type, settings) {
+        this.type = type;
+        this.settings = validateSettings(settings);
+        this.startTime = Date.now();
+        this.countries = [];
+        this.currentIndex = 0;
+        this.score = 0;
+        this.userAnswers = [];
+        this.isActive = false;
+    }
+    
+    start() {
+        this.isActive = true;
+        this.countries = getCountriesByRegion(this.settings.region);
+        const questionCount = this.settings.questionCount === 'all' ? 
+            this.countries.length : 
+            Math.min(parseInt(this.settings.questionCount), this.countries.length);
+        this.countries = this.countries.sort(() => Math.random() - 0.5).slice(0, questionCount);
+    }
+    
+    submitAnswer(userAnswer, correctAnswer) {
+        if (!this.isActive) return false;
+        
+        const isCorrect = checkAnswerMatch(userAnswer.toLowerCase(), correctAnswer.toLowerCase());
+        
+        this.userAnswers.push({
+            question: this.currentIndex + 1,
+            userAnswer,
+            correctAnswer,
+            isCorrect,
+            timestamp: Date.now()
+        });
+        
+        if (isCorrect) this.score++;
+        this.currentIndex++;
+        
+        return isCorrect;
+    }
+    
+    isComplete() {
+        return this.currentIndex >= this.countries.length;
+    }
+    
+    getStats() {
+        const duration = Date.now() - this.startTime;
+        return {
+            score: this.score,
+            total: this.countries.length,
+            accuracy: Math.round((this.score / this.countries.length) * 100),
+            duration: Math.round(duration / 1000),
+            averageTime: Math.round(duration / this.countries.length / 1000)
+        };
+    }
+    
+    end() {
+        this.isActive = false;
+        return this.getStats();
+    }
+}
+
+// Utility Functions
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    return input.trim().replace(/[<>\"']/g, '');
+}
+
+function validateSettings(settings) {
+    const validRegions = ['eu', 'na', 'sa', 'as', 'af', 'oc', 'wrld', 'all'];
+    const validQuizTypes = ['multiple-choice', 'fill-in-the-blank', 'flag-to-country', 'country-to-flag', 'speed-round', 'partial-flag', 'flashcard', 'country-explorer'];
+    const validQuestionCounts = ['5', '10', '15', '20', '25', 'all'];
+    
+    return {
+        region: validRegions.includes(settings.region) ? settings.region : 'eu',
+        quizType: validQuizTypes.includes(settings.quizType) ? settings.quizType : 'multiple-choice',
+        questionCount: validQuestionCounts.includes(settings.questionCount) ? settings.questionCount : '10',
+        difficulty: ['beginner', 'intermediate', 'advanced', 'expert'].includes(settings.difficulty) ? settings.difficulty : 'beginner',
+        includeTerritory: Boolean(settings.includeTerritory),
+        includeCapital: Boolean(settings.includeCapital),
+        includeCurrency: Boolean(settings.includeCurrency)
+    };
+}
+
 function getRegionName(regionCode) {
     const regions = {
         'eu': 'Europe',
@@ -397,14 +695,25 @@ function getRegionName(regionCode) {
 }
 
 function getCountriesByRegion(region) {
+    // Check if CountryData is available
+    if (typeof CountryData === 'undefined') {
+        console.error('CountryData not loaded. Please check if countryData.js is properly included.');
+        return [];
+    }
+    
     // Create countries array from CountryData if it doesn't exist
     if (typeof countries === 'undefined') {
         window.countries = [];
-        Object.keys(CountryData).forEach(regionCode => {
-            CountryData[regionCode].forEach(country => {
-                window.countries.push({...country, region: regionCode});
+        try {
+            Object.keys(CountryData).forEach(regionCode => {
+                CountryData[regionCode].forEach(country => {
+                    window.countries.push({...country, region: regionCode});
+                });
             });
-        });
+        } catch (error) {
+            console.error('Error processing CountryData:', error);
+            return [];
+        }
     }
     
     if (region === 'all' || region === 'wrld') {
@@ -583,19 +892,41 @@ function showSpeedQuestion() {
     `;
     
     // Auto-focus input
-    document.getElementById('speed-answer').focus();
+    const input = document.getElementById('speed-answer');
+    input.focus();
     
-    // Allow Enter key to submit
-    document.getElementById('speed-answer').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    // Allow Enter key to submit (remove any existing listeners first)
+    input.removeEventListener('keypress', handleSpeedRoundEnter);
+    input.addEventListener('keypress', handleSpeedRoundEnter);
+}
+
+function handleSpeedRoundEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        // Only proceed if we're not already processing an answer
+        const speedData = window.speedRoundData;
+        if (speedData && speedData.active) {
             checkSpeedAnswer();
         }
-    });
+    }
 }
 
 function checkSpeedAnswer() {
     const speedData = window.speedRoundData;
-    const userAnswer = document.getElementById('speed-answer').value.toLowerCase().trim();
+    const inputElement = document.getElementById('speed-answer');
+    const submitButton = document.querySelector('.speed-submit');
+    
+    // Prevent multiple submissions and ensure we're still active
+    if (!speedData || !speedData.active || !inputElement || inputElement.disabled || 
+        !submitButton || submitButton.disabled) {
+        return;
+    }
+    
+    // Disable input and button to prevent duplicate submissions
+    inputElement.disabled = true;
+    submitButton.disabled = true;
+    
+    const userAnswer = inputElement.value.toLowerCase().trim();
     const correctAnswer = speedData.countries[speedData.currentIndex].name.toLowerCase();
     
     if (userAnswer === correctAnswer) {
@@ -1025,27 +1356,48 @@ function showFillInBlankQuestion() {
     document.getElementById('quiz-content').innerHTML = `
         <div class="fill-blank-question">
             <div class="flag-display">
-                <span class="fi fi-${country.code}"></span>
+                <span class="fi fi-${country.code}" role="img" aria-label="Flag of ${country.name}"></span>
             </div>
             <h3>Type the name of this country:</h3>
-            <input type="text" id="fill-blank-answer" placeholder="Country name..." autocomplete="off">
-            <button onclick="checkFillInBlankAnswer()" class="submit-answer">Submit</button>
+            <input type="text" 
+                   id="fill-blank-answer" 
+                   placeholder="Country name..." 
+                   autocomplete="off"
+                   aria-label="Enter country name"
+                   aria-describedby="hint-text">
+            <button onclick="checkFillInBlankAnswer()" 
+                    class="submit-answer"
+                    aria-label="Submit your answer">Submit</button>
             <div class="hint-section">
-                <button onclick="showHint()" class="hint-button">Need a hint?</button>
-                <div id="hint-text" style="display: none; margin-top: 10px; color: var(--accent-color);"></div>
+                <button onclick="showHint()" 
+                        class="hint-button"
+                        aria-label="Get a hint for this country">Need a hint?</button>
+                <div id="hint-text" 
+                     style="display: none; margin-top: 10px; color: var(--accent-color);"
+                     role="region"
+                     aria-live="polite"></div>
             </div>
         </div>
     `;
     
     // Auto-focus input
-    document.getElementById('fill-blank-answer').focus();
+    const input = document.getElementById('fill-blank-answer');
+    input.focus();
     
-    // Allow Enter key to submit
-    document.getElementById('fill-blank-answer').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    // Allow Enter key to submit (remove any existing listeners first)
+    input.removeEventListener('keypress', handleFillInBlankEnter);
+    input.addEventListener('keypress', handleFillInBlankEnter);
+}
+
+function handleFillInBlankEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        // Only proceed if we're not already processing an answer
+        const submitButton = document.querySelector('.submit-answer');
+        if (submitButton && !submitButton.disabled) {
             checkFillInBlankAnswer();
         }
-    });
+    }
 }
 
 function showHint() {
@@ -1067,13 +1419,30 @@ function showHint() {
 
 function checkFillInBlankAnswer() {
     const quiz = window.fillInBlankQuiz;
-    const userAnswer = document.getElementById('fill-blank-answer').value.toLowerCase().trim();
+    const inputElement = document.getElementById('fill-blank-answer');
+    const submitButton = document.querySelector('.submit-answer');
+    
+    // Prevent multiple submissions
+    if (!inputElement || inputElement.disabled || !submitButton || submitButton.disabled) {
+        return;
+    }
+    
+    // Validate input
+    const rawAnswer = inputElement.value;
+    if (!rawAnswer || rawAnswer.trim().length === 0) {
+        showErrorMessage('Please enter an answer before submitting.');
+        return;
+    }
+    
+    // Disable input and button to prevent duplicate submissions
+    inputElement.disabled = true;
+    submitButton.disabled = true;
+    
+    const userAnswer = sanitizeInput(rawAnswer).toLowerCase();
     const correctAnswer = quiz.countries[quiz.currentIndex].name.toLowerCase();
     
-    // Check for exact match or close match
-    const isCorrect = userAnswer === correctAnswer || 
-                     correctAnswer.includes(userAnswer) && userAnswer.length > 3 ||
-                     userAnswer.includes(correctAnswer.split(' ')[0].toLowerCase());
+    // Enhanced matching logic
+    const isCorrect = checkAnswerMatch(userAnswer, correctAnswer);
     
     if (isCorrect) {
         quiz.score++;
@@ -1092,28 +1461,105 @@ function checkFillInBlankAnswer() {
     
     setTimeout(() => {
         content.style.background = '';
+        // Remove the event listener before showing the next question
+        if (inputElement) {
+            inputElement.removeEventListener('keypress', handleFillInBlankEnter);
+        }
         showFillInBlankQuestion();
     }, 2000);
 }
 
+// Enhanced answer matching function
+function checkAnswerMatch(userAnswer, correctAnswer) {
+    // Exact match
+    if (userAnswer === correctAnswer) return true;
+    
+    // Partial match for longer answers
+    if (correctAnswer.includes(userAnswer) && userAnswer.length > 3) return true;
+    
+    // Check first word match for compound country names
+    if (userAnswer.includes(correctAnswer.split(' ')[0])) return true;
+    
+    // Levenshtein distance for typos (simple version)
+    if (correctAnswer.length > 5 && calculateSimilarity(userAnswer, correctAnswer) > 0.8) return true;
+    
+    return false;
+}
+
+// Simple similarity calculation
+function calculateSimilarity(str1, str2) {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    const editDistance = levenshteinDistance(longer, shorter);
+    return (longer.length - editDistance) / longer.length;
+}
+
+// Levenshtein distance implementation
+function levenshteinDistance(str1, str2) {
+    const matrix = Array(str2.length + 1).fill().map(() => Array(str1.length + 1).fill(0));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+        for (let i = 1; i <= str1.length; i++) {
+            const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+            matrix[j][i] = Math.min(
+                matrix[j][i - 1] + 1,
+                matrix[j - 1][i] + 1,
+                matrix[j - 1][i - 1] + cost
+            );
+        }
+    }
+    
+    return matrix[str2.length][str1.length];
+}
+
 function endFillInBlankQuiz() {
     const quiz = window.fillInBlankQuiz;
+    const stats = {
+        score: quiz.score,
+        total: quiz.countries.length,
+        accuracy: Math.round((quiz.score / quiz.countries.length) * 100)
+    };
+    
+    // Record progress
+    window.progressTracker.recordQuiz(stats, 'fill-in-the-blank');
+    const overallStats = window.progressTracker.getOverallStats();
+    
     const main = document.querySelector('main');
     main.innerHTML = `
         <div class="quiz-results">
             <h2>Fill in the Blank Quiz Complete!</h2>
             <div class="final-quiz-stats">
                 <div class="stat-item">
-                    <span class="stat-number">${quiz.score}</span>
+                    <span class="stat-number">${stats.score}</span>
                     <span class="stat-label">Correct Answers</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">${quiz.countries.length}</span>
+                    <span class="stat-number">${stats.total}</span>
                     <span class="stat-label">Total Questions</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">${Math.round((quiz.score / quiz.countries.length) * 100)}%</span>
+                    <span class="stat-number">${stats.accuracy}%</span>
                     <span class="stat-label">Accuracy</span>
+                </div>
+            </div>
+            <div class="progress-stats">
+                <h3>Your Progress</h3>
+                <div class="progress-grid">
+                    <div class="progress-item">
+                        <span class="progress-number">${overallStats.totalQuizzes}</span>
+                        <span class="progress-label">Total Quizzes</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-number">${overallStats.overallAccuracy}%</span>
+                        <span class="progress-label">Overall Accuracy</span>
+                    </div>
+                    <div class="progress-item">
+                        <span class="progress-number">${overallStats.currentStreak}</span>
+                        <span class="progress-label">Current Streak</span>
+                    </div>
                 </div>
             </div>
             <button onclick="location.reload()" class="start-new-session-btn">Try Again</button>

@@ -1,18 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get settings from sessionStorage
-    const settingsData = sessionStorage.getItem('quizSettings');
-    
-    if (!settingsData) {
-        // If no settings found, redirect back to main page
+    try {
+        const settingsData = sessionStorage.getItem('quizSettings');
+        
+        if (!settingsData) {
+            // If no settings found, redirect back to main page
+            window.location.href = '../index.html';
+            return;
+        }
+
+        const settings = JSON.parse(settingsData);
+        
+        // Initialize quiz content based on settings
+        initializeQuiz(settings);
+    } catch (error) {
+        console.error('Failed to load quiz settings:', error);
         window.location.href = '../index.html';
-        return;
     }
-    
-    const settings = JSON.parse(settingsData);
-    console.log('Quiz mode settings:', settings);
-    
-    // Initialize quiz content based on settings
-    initializeQuiz(settings);
 });
 
 let currentQuiz = {
@@ -491,6 +495,19 @@ function shuffleArray(array) {
 }
 
 function goBack() {
+    // Clean up any active event listeners before navigation
+    cleanupEventListeners();
     sessionStorage.removeItem('quizSettings');
     window.location.href = '../index.html';
+}
+
+// Global event listener cleanup function
+function cleanupEventListeners() {
+    // Remove any remaining global event listeners
+    const existingHandlers = ['handleMultipleChoiceKeys', 'handleNextQuestionEnter', 'handleResultsKeys'];
+    existingHandlers.forEach(handlerName => {
+        if (window[handlerName]) {
+            document.removeEventListener('keypress', window[handlerName]);
+        }
+    });
 }
